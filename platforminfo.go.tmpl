@@ -1,0 +1,54 @@
+// Code {{/* not */}}generated go generate DO NOT EDIT.
+package opencl
+
+/*
+#include <stdlib.h>
+
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
+*/
+import "C"
+import (
+  "fmt"
+  "strings"
+  "unsafe"
+)
+
+func (p Platform) getInfoString(name string, id C.cl_platform_info) (string, error) {
+  var n C.size_t
+  if err := C.clGetPlatformInfo(p.id, id, 0, nil, &n); err != C.CL_SUCCESS {
+    return "", fmt.Errorf("error getting length of platform info %s: %d", name, err)
+  }
+
+  buf := make([]C.char, n)
+  if err := C.clGetPlatformInfo(p.id, id, n, unsafe.Pointer(&buf[0]), nil); err != C.CL_SUCCESS {
+    return "", fmt.Errorf("error getting platform info %s: %d", name, err)
+  }
+
+  return C.GoString(&buf[0]), nil
+}
+
+func (p Platform) dummyUseStrings() ([]string) {
+  // a dummy function so that strings is not unused even if template space-delim is not used
+  return strings.Split("", "")
+}
+{{define "string"}}func (p Platform) {{.Name}}() (string, error) {
+  return p.getInfoString({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "space-delim"}}func (p Platform) {{.Name}}() ([]string, error) {
+  str, err := p.getInfoString({{printf "%#v" .Name}}, {{.ID}})
+  if err != nil {
+    return nil, err
+  }
+  return strings.Split(str, " "), nil
+}
+{{end}}
+{{- range . -}}
+{{- if (eq .ReturnType "string")}}{{template "string" .}}
+{{- else if (eq .ReturnType "space-delim")}}{{template "space-delim" .}}
+{{- else}}Unknown return type {{.ReturnType}} for {{.Name}}{{end}}
+{{end -}}
