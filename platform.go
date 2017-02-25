@@ -8,7 +8,9 @@ package opencl
 #endif
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+)
 
 type Platform struct {
 	id C.cl_platform_id
@@ -31,4 +33,8 @@ func GetPlatforms() ([]Platform, error) {
 	}
 
 	return platforms, nil
+}
+
+func (p Platform) Devices(deviceType DeviceType) ([]Device, error) {
+	return getDevices(p, deviceType)
 }

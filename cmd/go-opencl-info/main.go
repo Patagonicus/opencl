@@ -41,5 +41,14 @@ func main() {
 		log.Printf("  Profile: %s", profile)
 		log.Printf("  Version: %s", version)
 		log.Printf("  Extensions: %s", strings.Join(extensions, ", "))
+
+		devices, err := p.Devices(opencl.DeviceTypeAll)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for i := range devices {
+			log.Printf("  Device %d", i)
+		}
 	}
 }
