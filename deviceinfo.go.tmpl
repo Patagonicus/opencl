@@ -1,0 +1,218 @@
+// Code {{/* not */}}generated go generate DO NOT EDIT.
+package opencl
+
+/*
+#include <stdlib.h>
+
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
+*/
+import "C"
+import (
+  "fmt"
+  "strings"
+  "unsafe"
+)
+
+func (d Device) getInfoType(name string, id C.cl_device_info) (DeviceType, error) {
+  var buf C.cl_device_type
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return 0, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return DeviceType(buf), nil
+}
+
+func (d Device) getInfoBool(name string, id C.cl_device_info) (bool, error) {
+  var buf C.cl_bool
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return false, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return buf == C.CL_TRUE, nil
+}
+
+func (d Device) getInfoUint(name string, id C.cl_device_info) (uint, error) {
+  var buf C.cl_uint
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return 0, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return uint(buf), nil
+}
+
+func (d Device) getInfoUlong(name string, id C.cl_device_info) (uint64, error) {
+  var buf C.cl_long
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return 0, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return uint64(buf), nil
+}
+
+func (d Device) getInfoSize(name string, id C.cl_device_info) (uintptr, error) {
+  var buf C.size_t
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return 0, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return uintptr(buf), nil
+}
+
+func (d Device) getInfoSizeArray(name string, id C.cl_device_info) ([]uintptr, error) {
+  var bytes C.size_t
+  if err := C.clGetDeviceInfo(d.id, id, 0, nil, &bytes); err != C.CL_SUCCESS {
+    return nil, fmt.Errorf("error getting length of device info %s: %d", name, err)
+  }
+
+  n := bytes / C.size_t(unsafe.Sizeof(C.size_t(0)))
+  bytes = n * C.size_t(unsafe.Sizeof(C.size_t(0)))
+
+  buf := make([]C.size_t, n)
+  if err := C.clGetDeviceInfo(d.id, id, bytes, unsafe.Pointer(&buf[0]), nil); err != C.CL_SUCCESS {
+    return nil, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  result := make([]uintptr, n)
+  for i, v := range buf {
+    result[i] = uintptr(v)
+  }
+
+  return result, nil
+}
+
+func (d Device) getInfoString(name string, id C.cl_device_info) (string, error) {
+  var n C.size_t
+  if err := C.clGetDeviceInfo(d.id, id, 0, nil, &n); err != C.CL_SUCCESS {
+    return "", fmt.Errorf("error getting length of device info %s: %d", name, err)
+  }
+
+  buf := make([]C.char, n)
+  if err := C.clGetDeviceInfo(d.id, id, n, unsafe.Pointer(&buf[0]), nil); err != C.CL_SUCCESS {
+    return "", fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  return C.GoString(&buf[0]), nil
+}
+
+func (d Device) getInfoFPConfig(name string, id C.cl_device_info) (FPConfig, error) {
+  var buf C.cl_device_fp_config
+  var result FPConfig
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return result, fmt.Errorf("error getting device info %s: %d", name, err)
+  }
+
+  result.config = buf
+  return result, nil
+}
+
+func (d Device) getInfoMemCacheType(name string, id C.cl_device_info) (MemCacheType, error) {
+  var buf C.cl_device_mem_cache_type
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return CacheNone, fmt.Errorf("error getting device inf %s: %d", name, err)
+  }
+
+  return memCacheType(buf)
+}
+
+func (d Device) getInfoLocalMemType(name string, id C.cl_device_info) (LocalMemType, error) {
+  var buf C.cl_device_local_mem_type
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return LocalMemNone, fmt.Errorf("error getting device inf %s: %d", name, err)
+  }
+
+  return localMemType(buf)
+}
+
+func (d Device) getInfoQueueProperties(name string, id C.cl_device_info) (CommandQueueProperties, error) {
+  var buf C.cl_command_queue_properties
+  if err := C.clGetDeviceInfo(d.id, id, C.size_t(unsafe.Sizeof(buf)), unsafe.Pointer(&buf), nil); err != C.CL_SUCCESS {
+    return CommandQueueProperties{}, fmt.Errorf("error getting device inf %s: %d", name, err)
+  }
+
+  return fromCLProperties(buf), nil
+}
+
+func (d Device) dummyUseStrings() ([]string) {
+  // a dummy function so that strings is not unused even if template space-delim is not used
+  return strings.Split("", "")
+}
+{{define "type"}}func (d Device) {{.Name}}() (DeviceType, error) {
+  return d.getInfoType({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "bool"}}func (d Device) {{.Name}}() (bool, error) {
+  return d.getInfoBool({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "uint"}}func (d Device) {{.Name}}() (uint, error) {
+  return d.getInfoUint({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "ulong"}}func (d Device) {{.Name}}() (uint64, error) {
+  return d.getInfoUlong({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "size"}}func (d Device) {{.Name}}() (uintptr, error) {
+  return d.getInfoSize({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "size-array"}}func (d Device) {{.Name}}() ([]uintptr, error) {
+  return d.getInfoSizeArray({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "string"}}func (d Device) {{.Name}}() (string, error) {
+  return d.getInfoString({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "space-delim"}}func (d Device) {{.Name}}() ([]string, error) {
+  str, err := d.getInfoString({{printf "%#v" .Name}}, {{.ID}})
+  if err != nil {
+    return nil, err
+  }
+  return strings.Split(str, " "), nil
+}
+{{end}}
+{{define "semicolon-delim"}}func (d Device) {{.Name}}() ([]string, error) {
+  str, err := d.getInfoString({{printf "%#v" .Name}}, {{.ID}})
+  if err != nil {
+    return nil, err
+  }
+  return strings.Split(str, ";"), nil
+}
+{{end}}
+{{define "fpconfig"}}func (d Device) {{.Name}}() (FPConfig, error) {
+  return d.getInfoFPConfig({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "memcachetype"}}func (d Device) {{.Name}}() (MemCacheType, error) {
+  return d.getInfoMemCacheType({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "localmemtype"}}func (d Device) {{.Name}}() (LocalMemType, error) {
+  return d.getInfoLocalMemType({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{define "queueproperties"}}func (d Device) {{.Name}}() (CommandQueueProperties, error) {
+  return d.getInfoQueueProperties({{printf "%#v" .Name}}, {{.ID}})
+}
+{{end}}
+{{- range . -}}
+{{- if (eq .ReturnType "type")}}{{template "type" .}}
+{{- else if (eq .ReturnType "bool")}}{{template "bool" .}}
+{{- else if (eq .ReturnType "uint")}}{{template "uint" .}}
+{{- else if (eq .ReturnType "ulong")}}{{template "ulong" .}}
+{{- else if (eq .ReturnType "size")}}{{template "size" .}}
+{{- else if (eq .ReturnType "size-array")}}{{template "size-array" .}}
+{{- else if (eq .ReturnType "string")}}{{template "string" .}}
+{{- else if (eq .ReturnType "space-delim")}}{{template "space-delim" .}}
+{{- else if (eq .ReturnType "semicolon-delim")}}{{template "semicolon-delim" .}}
+{{- else if (eq .ReturnType "fpconfig")}}{{template "fpconfig" .}}
+{{- else if (eq .ReturnType "memcachetype")}}{{template "memcachetype" .}}
+{{- else if (eq .ReturnType "localmemtype")}}{{template "localmemtype" .}}
+{{- else if (eq .ReturnType "queueproperties")}}{{template "queueproperties" .}}
+{{- else}}Unknown return type {{.ReturnType}} for {{.Name}}{{end}}
+{{end -}}

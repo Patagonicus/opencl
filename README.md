@@ -9,9 +9,9 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
 - [x] querying platforms
   - [x] enumerate platforms
   - [x] query info
-- [ ] querying devices
+- [x] querying devices
   - [x] enumerate devices of a platform
-  - [ ] querying info
+  - [x] querying info
 - [ ] subdevices (not planned for now)
 - [ ] context
   - [ ] creating and releasing contexts
