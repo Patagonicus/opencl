@@ -12,6 +12,7 @@ package main
 import "C"
 import (
 	"bytes"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"os"
@@ -116,7 +117,7 @@ func generate(tmpl *template.Template, data interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return format.Source(buf.Bytes())
 }
 
 func writeBytes(filename string, data []byte) error {
