@@ -86,3 +86,33 @@ func (q CommandQueue) EnqueueWriteBuffer(memory Memory, offset uintptr, buffer [
 	}
 	return nil
 }
+
+func (q CommandQueue) EnqueueNDRangeKernel(kernel Kernel, globalWorkOffset, globalWorkSize, localWorkSize []uintptr, waitList []Event) (*Event, error) {
+	if len(globalWorkOffset) != len(globalWorkSize) || len(globalWorkOffset) != len(localWorkSize) {
+		return nil, fmt.Errorf("globalWorkOffset, globalWorkSize and localWorkSize have to have the same length")
+	}
+
+	// TODO: check that len(dim) > 0
+	dim := C.cl_uint(len(globalWorkOffset))
+	clGlobalWorkOffset := make([]C.size_t, dim)
+	clGlobalWorkSize := make([]C.size_t, dim)
+	clLocalWorkSize := make([]C.size_t, dim)
+	for i := range globalWorkOffset {
+		clGlobalWorkOffset[i] = C.size_t(globalWorkOffset[i])
+		clGlobalWorkSize[i] = C.size_t(globalWorkSize[i])
+		clLocalWorkSize[i] = C.size_t(localWorkSize[i])
+	}
+
+	var clEventsPtr *C.cl_event
+	if len(waitList) > 0 {
+		clEventsPtr = &asCLEventList(waitList)[0]
+	}
+
+	var event Event
+	err := C.clEnqueueNDRangeKernel(q.queue, kernel.kernel, dim, &clGlobalWorkOffset[0], &clGlobalWorkSize[0], &clLocalWorkSize[0], C.cl_uint(len(waitList)), clEventsPtr, &event.event)
+	if err != C.CL_SUCCESS {
+		return nil, fmt.Errorf("failed to enqueue kernel: %d", err)
+	}
+
+	return &event, nil
+}

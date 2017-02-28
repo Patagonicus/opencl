@@ -34,7 +34,7 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [x] creating and releasing kernels
   - [x] setting arguments
   - [ ] querying kernel, work group and argument info
-  - [ ] executing kernels
+  - [x] executing kernels
 - [ ] event objects
   - [ ] creating and releasing user events (not planned for now)
   - [ ] query event info
