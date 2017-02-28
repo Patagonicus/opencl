@@ -56,3 +56,7 @@ func (p Program) BuildLog(device Device) (string, error) {
 
 	return C.GoString(&result[0]), nil
 }
+
+func (p Program) CreateKernel(name string) (*Kernel, error) {
+	return createKernel(p, name)
+}

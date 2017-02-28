@@ -31,7 +31,7 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [ ] unloading the compiler
   - [ ] querying program (build) info
 - [ ] kernel objects
-  - [ ] creating and releasing kernels
+  - [x] creating and releasing kernels
   - [ ] setting arguments
   - [ ] querying kernel, work group and argument info
   - [ ] executing kernels
