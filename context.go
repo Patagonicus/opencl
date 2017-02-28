@@ -19,6 +19,7 @@ type Context struct {
 	context  C.cl_context
 	callback func(string, unsafe.Pointer, uintptr, interface{})
 	userdata interface{}
+	devices  []*Device
 }
 
 type ContextProperties struct {
@@ -31,7 +32,7 @@ func contextCallback(errinfo *C.char, private_info unsafe.Pointer, cb C.size_t, 
 }
 
 func CreateContext(properties *ContextProperties, devices []*Device, notify func(string, unsafe.Pointer, uintptr, interface{}), userdata interface{}) (*Context, error) {
-	context := Context{nil, notify, userdata}
+	context := Context{nil, notify, userdata, devices}
 
 	ids := make([]C.cl_device_id, len(devices))
 	for i, d := range devices {
@@ -59,4 +60,12 @@ func (c Context) Release() error {
 		return fmt.Errorf("Error releasing context: %d", err)
 	}
 	return nil
+}
+
+func (c Context) Devices() []*Device {
+	return c.devices
+}
+
+func (c Context) CreateCommandQueue(device Device, properties *CommandQueueProperties) (*CommandQueue, error) {
+	return createCommandQueue(c, device, properties)
 }
