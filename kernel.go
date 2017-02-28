@@ -37,3 +37,15 @@ func (k Kernel) Release() error {
 	}
 	return nil
 }
+
+func (k Kernel) SetArg(index uint, size uintptr, value unsafe.Pointer) error {
+	err := C.clSetKernelArg(k.kernel, C.cl_uint(index), C.size_t(size), value)
+	if err != C.CL_SUCCESS {
+		return fmt.Errorf("error setting kernel argument: %d", err)
+	}
+	return nil
+}
+
+func (k Kernel) SetArgBuffer(index uint, buffer Memory) error {
+	return k.SetArg(index, unsafe.Sizeof(buffer.memory), unsafe.Pointer(&buffer.memory))
+}

@@ -32,7 +32,7 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [ ] querying program (build) info
 - [ ] kernel objects
   - [x] creating and releasing kernels
-  - [ ] setting arguments
+  - [x] setting arguments
   - [ ] querying kernel, work group and argument info
   - [ ] executing kernels
 - [ ] event objects
