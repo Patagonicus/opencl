@@ -64,3 +64,11 @@ func getDevices(platform Platform, deviceType DeviceType) ([]Device, error) {
 
 	return devices, nil
 }
+
+func asCLDeviceIDs(devices []*Device) []C.cl_device_id {
+	ids := make([]C.cl_device_id, len(devices))
+	for i, d := range devices {
+		ids[i] = d.id
+	}
+	return ids
+}

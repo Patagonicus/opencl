@@ -25,8 +25,8 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [x] reading buffers (blocking only for now)
   - [ ] querying info
 - [ ] program objects
-  - [ ] creating and releasing program objects
-  - [ ] building program executables
+  - [x] creating and releasing program objects
+  - [x] building program executables
   - [ ] separate compiling and linking (not planned for now)
   - [ ] unloading the compiler
   - [ ] querying program (build) info
