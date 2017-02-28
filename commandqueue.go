@@ -8,7 +8,10 @@ package opencl
 #endif
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 type CommandQueue struct {
 	queue C.cl_command_queue
@@ -58,6 +61,28 @@ func (q CommandQueue) Release() error {
 	err := C.clReleaseCommandQueue(q.queue)
 	if err != C.CL_SUCCESS {
 		return fmt.Errorf("falied to release command queue: %d", err)
+	}
+	return nil
+}
+
+func (q CommandQueue) EnqueueReadBuffer(memory Memory, offset uintptr, buffer []byte, waitList []Event) error {
+	var clEventsPtr unsafe.Pointer
+	if len(waitList) > 0 {
+		clEventsPtr = unsafe.Pointer(&asCLEventList(waitList)[0])
+	}
+	if err := C.clEnqueueReadBuffer(q.queue, memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
+		return fmt.Errorf("failed to enqueue read: %d", err)
+	}
+	return nil
+}
+
+func (q CommandQueue) EnqueueWriteBuffer(memory Memory, offset uintptr, buffer []byte, waitList []Event) error {
+	var clEventsPtr unsafe.Pointer
+	if len(waitList) > 0 {
+		clEventsPtr = unsafe.Pointer(&asCLEventList(waitList)[0])
+	}
+	if err := C.clEnqueueWriteBuffer(q.queue, memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
+		return fmt.Errorf("Failed to enqueue write: %d", err)
 	}
 	return nil
 }

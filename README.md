@@ -21,8 +21,8 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [ ] querying info
 - [ ] buffers
   - [*] creating and releasing buffers
-  - [ ] writing buffers
-  - [ ] reading buffers
+  - [x] writing buffers (blocking only for now)
+  - [x] reading buffers (blocking only for now)
   - [ ] querying info
 - [ ] program objects
   - [ ] creating and releasing program objects
