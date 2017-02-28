@@ -14,7 +14,7 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [x] querying info
 - [ ] subdevices (not planned for now)
 - [ ] context
-  - [ ] creating and releasing contexts
+  - [x] creating and releasing contexts
   - [ ] querying info
 - [ ] command queues
   - [ ] creating and releasing command queues
