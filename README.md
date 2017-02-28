@@ -20,7 +20,7 @@ It is mainly developed and tested on Linux and with Intel and Nvidia GPUs. It sh
   - [x] creating and releasing command queues
   - [ ] querying info
 - [ ] buffers
-  - [ ] creating and releasing buffers
+  - [*] creating and releasing buffers
   - [ ] writing buffers
   - [ ] reading buffers
   - [ ] querying info

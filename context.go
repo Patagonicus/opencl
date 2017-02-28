@@ -69,3 +69,7 @@ func (c Context) Devices() []*Device {
 func (c Context) CreateCommandQueue(device Device, properties *CommandQueueProperties) (*CommandQueue, error) {
 	return createCommandQueue(c, device, properties)
 }
+
+func (c Context) CreateBuffer(flags MemoryFlags, size uintptr, hostPtr unsafe.Pointer) (*Memory, error) {
+	return createBuffer(c, flags, size, hostPtr)
+}
