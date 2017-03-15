@@ -32,22 +32,26 @@ func (f MemoryFlags) asClFlags() C.cl_mem_flags {
 }
 
 type Memory struct {
-	memory C.cl_mem
+	memory *C.cl_mem
 }
 
 func createBuffer(context Context, flags MemoryFlags, size uintptr, hostPtr unsafe.Pointer) (*Memory, error) {
+	var memory Memory
+	memory.memory = (*C.cl_mem)(C.malloc(C.sizeof_cl_mem))
 	var err C.cl_int
-	memory := C.clCreateBuffer(context.context, flags.asClFlags(), C.size_t(size), hostPtr, &err)
+	*memory.memory = C.clCreateBuffer(*context.context, flags.asClFlags(), C.size_t(size), hostPtr, &err)
 	if err != C.CL_SUCCESS {
+		C.free(unsafe.Pointer(memory.memory))
 		return nil, fmt.Errorf("failed to create buffer: %d", err)
 	}
-	return &Memory{memory}, nil
+	return &memory, nil
 }
 
 func (m Memory) Release() error {
-	err := C.clReleaseMemObject(m.memory)
+	err := C.clReleaseMemObject(*m.memory)
 	if err != C.CL_SUCCESS {
 		return fmt.Errorf("failed to release memory object: %d", err)
 	}
+	C.free(unsafe.Pointer(m.memory))
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 )
 
 type CommandQueue struct {
-	queue C.cl_command_queue
+	queue *C.cl_command_queue
 }
 
 type CommandQueueProperties struct {
@@ -49,19 +49,23 @@ func createCommandQueue(context Context, device Device, properties *CommandQueue
 	if properties != nil {
 		clProperties = properties.toCLProperties()
 	}
+	var queue CommandQueue
+	queue.queue = (*C.cl_command_queue)(C.malloc(C.sizeof_cl_command_queue))
 	var err C.cl_int
-	queue := C.clCreateCommandQueue(context.context, device.id, clProperties, &err)
+	*queue.queue = C.clCreateCommandQueue(*context.context, device.id, clProperties, &err)
 	if err != C.CL_SUCCESS {
+		C.free(unsafe.Pointer(queue.queue))
 		return nil, fmt.Errorf("failed to create command queue: %d", err)
 	}
-	return &CommandQueue{queue}, nil
+	return &queue, nil
 }
 
 func (q CommandQueue) Release() error {
-	err := C.clReleaseCommandQueue(q.queue)
+	err := C.clReleaseCommandQueue(*q.queue)
 	if err != C.CL_SUCCESS {
 		return fmt.Errorf("falied to release command queue: %d", err)
 	}
+	C.free(unsafe.Pointer(q.queue))
 	return nil
 }
 
@@ -70,7 +74,7 @@ func (q CommandQueue) EnqueueReadBuffer(memory Memory, offset uintptr, buffer []
 	if len(waitList) > 0 {
 		clEventsPtr = unsafe.Pointer(&asCLEventList(waitList)[0])
 	}
-	if err := C.clEnqueueReadBuffer(q.queue, memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
+	if err := C.clEnqueueReadBuffer(*q.queue, *memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
 		return fmt.Errorf("failed to enqueue read: %d", err)
 	}
 	return nil
@@ -81,7 +85,7 @@ func (q CommandQueue) EnqueueWriteBuffer(memory Memory, offset uintptr, buffer [
 	if len(waitList) > 0 {
 		clEventsPtr = unsafe.Pointer(&asCLEventList(waitList)[0])
 	}
-	if err := C.clEnqueueWriteBuffer(q.queue, memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
+	if err := C.clEnqueueWriteBuffer(*q.queue, *memory.memory, C.CL_TRUE, C.size_t(offset), C.size_t(len(buffer)), unsafe.Pointer(&buffer[0]), C.cl_uint(len(waitList)), clEventsPtr, nil); err != C.CL_SUCCESS {
 		return fmt.Errorf("Failed to enqueue write: %d", err)
 	}
 	return nil
@@ -109,7 +113,7 @@ func (q CommandQueue) EnqueueNDRangeKernel(kernel Kernel, globalWorkOffset, glob
 	}
 
 	var event Event
-	err := C.clEnqueueNDRangeKernel(q.queue, kernel.kernel, dim, &clGlobalWorkOffset[0], &clGlobalWorkSize[0], &clLocalWorkSize[0], C.cl_uint(len(waitList)), clEventsPtr, &event.event)
+	err := C.clEnqueueNDRangeKernel(*q.queue, *kernel.kernel, dim, &clGlobalWorkOffset[0], &clGlobalWorkSize[0], &clLocalWorkSize[0], C.cl_uint(len(waitList)), clEventsPtr, &event.event)
 	if err != C.CL_SUCCESS {
 		return nil, fmt.Errorf("failed to enqueue kernel: %d", err)
 	}

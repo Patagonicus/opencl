@@ -18,7 +18,7 @@ import (
 )
 
 type Context struct {
-	context  C.cl_context
+	context  *C.cl_context
 	callback func(string, unsafe.Pointer, uintptr, interface{})
 	userdata interface{}
 	devices  []*Device
@@ -35,6 +35,7 @@ func contextCallback(errinfo *C.char, private_info unsafe.Pointer, cb C.size_t, 
 
 func CreateContext(properties *ContextProperties, devices []*Device, notify func(string, unsafe.Pointer, uintptr, interface{}), userdata interface{}) (*Context, error) {
 	context := Context{nil, notify, userdata, devices}
+	context.context = (*C.cl_context)(C.malloc(C.sizeof_cl_context))
 
 	ids := asCLDeviceIDs(devices)
 
@@ -46,18 +47,20 @@ func CreateContext(properties *ContextProperties, devices []*Device, notify func
 	}
 
 	var err C.cl_int
-	context.context = C.clCreateContext(nil, C.cl_uint(len(ids)), &ids[0], callback, user, &err)
+	*context.context = C.clCreateContext(nil, C.cl_uint(len(ids)), &ids[0], callback, user, &err)
 	if err != C.CL_SUCCESS {
+		C.free(unsafe.Pointer(context.context))
 		return nil, fmt.Errorf("Error creating context: %d", err)
 	}
 	return &context, nil
 }
 
 func (c Context) Release() error {
-	err := C.clReleaseContext(c.context)
+	err := C.clReleaseContext(*c.context)
 	if err != C.CL_SUCCESS {
 		return fmt.Errorf("Error releasing context: %d", err)
 	}
+	C.free(unsafe.Pointer(c.context))
 	return nil
 }
 
@@ -84,9 +87,12 @@ func (c Context) CreateProgramWithSource(source []string) (*Program, error) {
 		clSourcePtr = &clSource[0]
 	}
 	var err C.cl_int
-	program := C.clCreateProgramWithSource(c.context, C.cl_uint(len(source)), clSourcePtr, nil, &err)
+	var program Program
+	program.program = (*C.cl_program)(C.malloc(C.sizeof_cl_program))
+	*program.program = C.clCreateProgramWithSource(*c.context, C.cl_uint(len(source)), clSourcePtr, nil, &err)
 	if err != C.CL_SUCCESS {
+		C.free(unsafe.Pointer(program.program))
 		return nil, fmt.Errorf("failed to create program: %d", err)
 	}
-	return &Program{program}, nil
+	return &program, nil
 }
